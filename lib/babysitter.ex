@@ -1,21 +1,33 @@
 defmodule Babysitter do
   use Supervisor
-  require IEx
 
   def start_link() do
     {:ok, pid} = Supervisor.start_link(__MODULE__, [])
-    {:ok, play(pid)}
+
+    Potato.reset
+    play(pid)
+
+    {:ok, pid}
   end
 
   def init(_) do
     (1..50)
       |> Enum.map( fn(_n) -> worker(Child, [], id: make_ref()) end )
-      |> Enum.concat( [worker(Potato, [], id: make_ref())] )
       |> supervise(strategy: :one_for_one, max_restarts: 0)
   end
 
-  def play(pid) do
-    IO.puts "PLAY!"
-    pid
+  def sleep(sitter) do
+
+  end
+
+  def play(sitter) do
+    IO.puts ""
+
+    Potato.light_fuse
+
+    [child | kids] = Supervisor.which_children(sitter)
+                     |> Enum.map( fn({_, pid, _, [Child]}) -> pid end )
+
+    Child.hot_potato(child, kids, sitter)
   end
 end
