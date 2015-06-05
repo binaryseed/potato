@@ -2,9 +2,9 @@ defmodule Potato do
   use GenServer
 
   # API
-  def start(),     do: GenServer.start_link(__MODULE__, [])
-  def check(pid),  do: GenServer.call(pid, :check)
-  def poison(pid), do: GenServer.call(pid, :poison)
+  def start_link(), do: GenServer.start_link(__MODULE__, [])
+  def check(pid),   do: GenServer.call(pid, :check)
+  def poison(pid),  do: GenServer.call(pid, :poison)
 
   # Server
   def init(_) do
