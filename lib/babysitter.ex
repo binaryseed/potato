@@ -12,7 +12,7 @@ defmodule Babysitter do
 
   def init(_) do
     (1..50)
-      |> Enum.map( fn(_n) -> worker(Child, [], id: make_ref()) end )
+      |> Enum.map( fn(_n) -> worker(Child, [self], id: make_ref()) end )
       |> supervise(strategy: :one_for_one, max_restarts: 0)
   end
 
@@ -28,6 +28,6 @@ defmodule Babysitter do
     [child | kids] = Supervisor.which_children(sitter)
                      |> Enum.map( fn({_, pid, _, [Child]}) -> pid end )
 
-    Child.hot_potato(child, kids, sitter)
+    Child.hot_potato(child, kids)
   end
 end

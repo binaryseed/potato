@@ -1,7 +1,6 @@
 defmodule Potato do
   use GenServer
 
-  # API
   def start_link(), do: GenServer.start_link(__MODULE__, [], name: __MODULE__)
   def reset(),      do: GenServer.call(__MODULE__, :reset)
   def check(),      do: GenServer.call(__MODULE__, :check)

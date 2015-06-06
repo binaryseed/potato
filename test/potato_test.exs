@@ -1,8 +1,3 @@
-# def TimerTest do
-#   use GenServer
-#   def start_link(), do: GenServer.start_link(__MODULE__, [])
-# end
-
 defmodule PotatoTest do
   use ExUnit.Case
 

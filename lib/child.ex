@@ -1,43 +1,52 @@
 defmodule Child do
   use GenServer
 
-  def start_link(), do: GenServer.start_link(__MODULE__, sociopath?(25))
-  def hot_potato(child, kids, sitter) do
-    :timer.sleep(Parent.random(5, 5))
-    GenServer.cast(child, {:hot_potato, kids, sitter})
+  def start_link(sitter) do
+    GenServer.start_link(__MODULE__, {sociopath?(25), sitter})
   end
 
-  def init(true),  do: {:ok, :sociopath}
-  def init(false), do: {:ok, :normie}
+  def init({true, sitter}) do
+    {:ok, {:sociopath, sitter}}
+  end
 
-  def handle_cast({:hot_potato, [next | kids], sitter}, :normie) do
+  def init({false, sitter}) do
+    {:ok, {:normie, sitter}}
+  end
+
+  def hot_potato(child, kids) do
+    :timer.sleep(Parent.random(5, 5))
+    GenServer.cast(child, {:hot_potato, kids})
+  end
+
+  # Server
+  def handle_cast({:hot_potato, [next | kids]}, {:normie, sitter}) do
     case Potato.check do
       :potato  ->
         IO.write "."
-        Child.hot_potato(next, kids, sitter)
+        Child.hot_potato(next, kids)
       :grenade ->
         IO.write "X"
         Process.exit(sitter, :grenade)
     end
 
-    {:noreply, :normie}
+    {:noreply, {:normie, sitter}}
   end
 
-  def handle_cast({:hot_potato, [next | kids], sitter}, :sociopath) do
+  def handle_cast({:hot_potato, [next | kids]}, {:sociopath, sitter}) do
     case Potato.check do
       :potato  ->
         IO.write ">"
         Potato.poison
-        Child.hot_potato(next, kids, sitter)
+        Child.hot_potato(next, kids)
       :grenade ->
         IO.write "X"
         Process.exit(sitter, :grenade)
     end
 
-    {:noreply, :sociopath}
+    {:noreply, {:sociopath, sitter}}
   end
 
-  def handle_cast({:hot_potato, [], sitter}, type) do
+  def handle_cast({:hot_potato, []}, {type, sitter}) do
     case Potato.check do
       :potato  ->
         IO.write ","
@@ -47,7 +56,7 @@ defmodule Child do
         Process.exit(sitter, :grenade)
     end
 
-    {:noreply, type}
+    {:noreply, {type, sitter}}
   end
 
   def sociopath?(n), do: Parent.random(n) == 13
