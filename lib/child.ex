@@ -1,7 +1,7 @@
 defmodule Child do
   use GenServer
 
-  def start_link(), do: GenServer.start_link(__MODULE__, {sociopath?(50)})
+  def start_link(), do: GenServer.start_link(__MODULE__, {sociopath?(25)})
 
   def init({true}),  do: {:ok, :sociopath}
   def init({false}), do: {:ok, :normie}

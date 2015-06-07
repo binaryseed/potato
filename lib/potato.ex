@@ -9,7 +9,7 @@ defmodule Potato do
 
   def check(),      do: GenServer.call(__MODULE__, :check)
   def poison(),     do: GenServer.call(__MODULE__, :poison)
-  def light_fuse(), do: GenServer.call(__MODULE__, :light_fuse)
+  def light_fuse(), do: GenServer.cast(__MODULE__, :light_fuse)
 
   # Server
   def handle_call(:check, from, {state, _holder}) do
@@ -20,12 +20,12 @@ defmodule Potato do
     {:reply, :ok, {:grenade, holder}}
   end
 
-  def handle_call(:light_fuse, _from, state) do
-    # :timer.send_after(Parent.random(50, 10), self, :blow)
-    {:reply, :ok, state}
+  def handle_cast(:light_fuse, state) do
+    :timer.send_after(Parent.random(3, 2), self, :boom)
+    {:noreply, state}
   end
 
-  def handle_info(:blow, {status, {pid, _ref} = holder}) do
+  def handle_info(:boom, {status, {pid, _ref} = holder}) do
     Babysitter.boom(pid)
 
     {:noreply, {status, holder}}

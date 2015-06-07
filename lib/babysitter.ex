@@ -13,9 +13,16 @@ defmodule Babysitter do
 
   def grenade(),  do: GenServer.cast(__MODULE__, :grenade)
   def play(),     do: GenServer.cast(__MODULE__, :play)
-  def boom(pid),  do: GenServer.call(__MODULE__, {:boom, pid})
+  def boom(pid),  do: GenServer.cast(__MODULE__, {:boom, pid})
 
   # Server
+  def handle_cast(:play, %{children: [winner | []]} = state) do
+    IO.puts "\n!"
+    Process.exit(self, :kill)
+
+    {:noreply, state}
+  end
+
   def handle_cast(:play, %{children: children} = state) do
     IO.puts ""
 
@@ -31,12 +38,12 @@ defmodule Babysitter do
     {:noreply, state}
   end
 
-  def handle_call({:boom, pid}, _from, %{children: children} = state) do
+  def handle_cast({:boom, pid}, %{children: children} = state) do
     Process.unlink(pid)
     Process.exit(pid, :kill)
 
     state = Map.put(state, :children, Enum.filter(children, &Process.alive?(&1) ))
 
-    {:reply, :boom, state}
+    {:noreply, state}
   end
 end
