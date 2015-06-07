@@ -8,7 +8,7 @@ defmodule Babysitter do
   def init(_) do
     children = (1..50) |> Enum.map( fn(_n) -> {:ok, pid} = Child.start_link; pid end )
     Babysitter.play
-    {:ok, %{children: children}}
+    {:ok, children}
   end
 
   def grenade(),  do: GenServer.cast(__MODULE__, :grenade)
@@ -16,34 +16,34 @@ defmodule Babysitter do
   def boom(pid),  do: GenServer.cast(__MODULE__, {:boom, pid})
 
   # Server
-  def handle_cast(:play, %{children: [winner | []]} = state) do
-    IO.puts "\n!"
+  def handle_cast(:play, [winner | []]) do
+    IO.puts "\n! #{inspect winner}"
     Process.exit(self, :kill)
 
-    {:noreply, state}
+    {:noreply, []}
   end
 
-  def handle_cast(:play, %{children: children} = state) do
+  def handle_cast(:play, children) do
     IO.puts ""
 
     Potato.light_fuse
     Child.hot_potato(children)
 
-    {:noreply, state}
+    {:noreply, children}
   end
 
-  def handle_cast(:grenade, %{children: children} = state) do
+  def handle_cast(:grenade, children) do
     Process.exit(self, :kill)
 
-    {:noreply, state}
+    {:noreply, children}
   end
 
-  def handle_cast({:boom, pid}, %{children: children} = state) do
+  def handle_cast({:boom, pid}, children) do
     Process.unlink(pid)
     Process.exit(pid, :kill)
 
-    state = Map.put(state, :children, Enum.filter(children, &Process.alive?(&1) ))
+    children = Enum.filter(children, &Process.alive?(&1))
 
-    {:noreply, state}
+    {:noreply, children}
   end
 end

@@ -40,7 +40,7 @@ defmodule Child do
     {:reply, :ok, :sociopath}
   end
 
-  def sociopath?(n) do
+  defp sociopath?(n) do
     << a :: 32, b :: 32, c :: 32 >> = :crypto.rand_bytes(12)
     :random.seed(a, b, c)
     :random.uniform(n) == 13
