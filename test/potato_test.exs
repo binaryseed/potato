@@ -13,7 +13,6 @@ defmodule PotatoTest do
 
   test "Parent supervision" do
     Parent.start_link
-    Babysitter.play
 
     :timer.sleep(5_000)
   end
