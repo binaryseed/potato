@@ -1,63 +1,43 @@
 defmodule Child do
   use GenServer
 
-  def start_link(sitter) do
-    GenServer.start_link(__MODULE__, {sociopath?(25), sitter})
-  end
+  def start_link(), do: GenServer.start_link(__MODULE__, {sociopath?(25)})
 
-  def init({true, sitter}) do
-    {:ok, {:sociopath, sitter}}
-  end
+  def init({true}),  do: {:ok, :sociopath}
+  def init({false}), do: {:ok, :normie}
 
-  def init({false, sitter}) do
-    {:ok, {:normie, sitter}}
-  end
-
-  def hot_potato(child, kids) do
-    :timer.sleep(Parent.random(5, 5))
-    GenServer.cast(child, {:hot_potato, kids})
+  def hot_potato(pid) do
+    :timer.sleep(Parent.random(2))
+    GenServer.call(pid, :hot_potato)
   end
 
   # Server
-  def handle_cast({:hot_potato, [next | kids]}, {:normie, sitter}) do
+  def handle_call(:hot_potato, _from, :normie) do
     case Potato.check do
       :potato  ->
         IO.write "."
-        Child.hot_potato(next, kids)
       :grenade ->
-        IO.write "X"
-        Process.exit(sitter, :grenade)
+        IO.write "x"
+        Babysitter.grenade
     end
 
-    {:noreply, {:normie, sitter}}
+    {:reply, :ok, :normie}
   end
 
-  def handle_cast({:hot_potato, [next | kids]}, {:sociopath, sitter}) do
+  def handle_call(:hot_potato, _from, :sociopath) do
     case Potato.check do
       :potato  ->
         IO.write ">"
         Potato.poison
-        Child.hot_potato(next, kids)
       :grenade ->
         IO.write "X"
-        Process.exit(sitter, :grenade)
+        Babysitter.grenade
     end
 
-    {:noreply, {:sociopath, sitter}}
+    {:reply, :ok, :sociopath}
   end
 
-  def handle_cast({:hot_potato, []}, {type, sitter}) do
-    case Potato.check do
-      :potato  ->
-        IO.write ","
-        Babysitter.play(sitter)
-      :grenade ->
-        IO.write "X"
-        Process.exit(sitter, :grenade)
-    end
-
-    {:noreply, {type, sitter}}
-  end
+# end?
 
   def sociopath?(n), do: Parent.random(n) == 13
 end

@@ -9,29 +9,33 @@ defmodule Potato do
 
   # Server
   def init(_) do
-    {:ok, {:potato, :holder, :sitter}}
+    {:ok, {:potato, :holder}}
   end
 
-  def handle_call(:reset, from, {status, _holder, sitter}) do
-    {:reply, :potato, {:potato, :holder, sitter}}
+  def handle_call(:reset, _from, {_status, _holder}) do
+    {:reply, :potato, {:potato, :holder}}
   end
 
-  def handle_call(:check, from, {status, _holder, sitter}) do
-    {:reply, status, {status, from, sitter}}
+  def handle_call(:check, from, {:potato, _holder}) do
+    {:reply, :potato, {:potato, from}}
   end
 
-  def handle_call(:poison, _from, {_status, holder, sitter}) do
-    {:reply, :grenade, {:grenade, holder, sitter}}
+  def handle_call(:check, from, {:grenade, _holder}) do
+    {:reply, :grenade, {:potato, from}}
+  end
+
+  def handle_call(:poison, _from, {_status, holder}) do
+    {:reply, :grenade, {:grenade, holder}}
   end
 
   def handle_call(:light_fuse, _from, state) do
-    :timer.send_after(Parent.random(500, 500), self, :blow)
+    # :timer.send_after(Parent.random(50, 10), self, :blow)
     {:reply, :lit, state}
   end
 
-  def handle_info(:blow, {status, {pid, ref}, sitter}) do
-    IO.write "\\"
-    Process.exit(pid, :kill)
-    {:noreply, {status, :holder, sitter}}
+  def handle_info(:blow, {status, {pid, _ref} = holder}) do
+    Babysitter.boom(pid)
+
+    {:noreply, {status, holder}}
   end
 end
