@@ -3,9 +3,7 @@ defmodule Potato do
 
   def start_link(), do: GenServer.start_link(__MODULE__, [], name: __MODULE__)
 
-  def init(_) do
-    {:ok, {:potato, :holder}}
-  end
+  def init(_),      do: {:ok, {:potato, :holder}}
 
   def check(),      do: GenServer.call(__MODULE__, :check)
   def poison(),     do: GenServer.call(__MODULE__, :poison)
@@ -21,7 +19,7 @@ defmodule Potato do
   end
 
   def handle_cast(:light_fuse, state) do
-    :timer.send_after(Parent.random(3, 2), self, :boom)
+    :timer.send_after(2, self, :boom)
     {:noreply, state}
   end
 

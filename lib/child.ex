@@ -6,12 +6,9 @@ defmodule Child do
   def init({true}),  do: {:ok, :sociopath}
   def init({false}), do: {:ok, :normie}
 
-  def hot_potato([]) do
-    Babysitter.play
-  end
-
+  def hot_potato([]), do: Babysitter.play
   def hot_potato([child | kids]) do
-    :timer.sleep(Parent.random(2))
+    :timer.sleep(1)
     GenServer.call(child, {:hot_potato, kids})
   end
 
@@ -43,5 +40,9 @@ defmodule Child do
     {:reply, :ok, :sociopath}
   end
 
-  def sociopath?(n), do: Parent.random(n) == 13
+  def sociopath?(n) do
+    << a :: 32, b :: 32, c :: 32 >> = :crypto.rand_bytes(12)
+    :random.seed(a, b, c)
+    :random.uniform(n) == 13
+  end
 end
